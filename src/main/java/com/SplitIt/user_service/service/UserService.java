@@ -1,10 +1,13 @@
 package com.SplitIt.user_service.service;
 
+import com.SplitIt.user_service.dto.LoginRequest;
+import com.SplitIt.user_service.dto.LoginResponse;
 import com.SplitIt.user_service.dto.RegisterRequest;
 import com.SplitIt.user_service.dto.RegisterResponse;
 import com.SplitIt.user_service.entity.User;
 import com.SplitIt.user_service.exception.DuplicateEmailException;
 import com.SplitIt.user_service.exception.DuplicatePhoneNumberException;
+import com.SplitIt.user_service.exception.InvalidCredentialsException;
 import com.SplitIt.user_service.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -18,6 +21,7 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
 
     public RegisterResponse register(RegisterRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
@@ -46,6 +50,23 @@ public class UserService {
                 .email(savedUser.getEmail())
                 .phoneNumber(savedUser.getPhoneNumber())
                 .createdAt(savedUser.getCreatedAt())
+                .build();
+    }
+
+    public LoginResponse login(LoginRequest request) {
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new InvalidCredentialsException("Invalid email or password"));
+
+        if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
+            throw new InvalidCredentialsException("Invalid email or password");
+        }
+
+        String token = jwtService.generateToken(user.getId(), user.getEmail());
+
+        return LoginResponse.builder()
+                .id(user.getId())
+                .email(user.getEmail())
+                .token(token)
                 .build();
     }
 }

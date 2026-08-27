@@ -1,5 +1,7 @@
 package com.SplitIt.user_service.controller;
 
+import com.SplitIt.user_service.dto.LoginRequest;
+import com.SplitIt.user_service.dto.LoginResponse;
 import com.SplitIt.user_service.dto.RegisterRequest;
 import com.SplitIt.user_service.dto.RegisterResponse;
 import com.SplitIt.user_service.service.UserService;
@@ -22,5 +24,11 @@ public class UserController {
     public ResponseEntity<RegisterResponse> register(@Valid @RequestBody RegisterRequest registerRequest){
         RegisterResponse registerResponse = userService.register(registerRequest);
         return ResponseEntity.status(HttpStatus.CREATED).body(registerResponse);
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest loginRequest){
+        LoginResponse loginResponse = userService.login(loginRequest);
+        return ResponseEntity.status(HttpStatus.OK).body(loginResponse);
     }
 }
