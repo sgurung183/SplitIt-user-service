@@ -1,5 +1,6 @@
 package com.SplitIt.user_service.service;
 
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
@@ -32,5 +33,21 @@ public class JwtService {
                 .expiration(expiry)
                 .signWith(signingKey)
                 .compact();
+    }
+
+    public Claims parseClaims(String token) {
+        return Jwts.parser()
+                .verifyWith(signingKey)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
+    }
+
+    public String extractEmail(String token) {
+        return parseClaims(token).getSubject();
+    }
+
+    public Long extractUserId(String token) {
+        return parseClaims(token).get("userId", Long.class);
     }
 }
